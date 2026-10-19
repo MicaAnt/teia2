@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "experiment_id": "pilot_v1",
+  "source_directory": "../soundSamples/dataset/v1/",
+  "dataset_manifest": "../soundSamples/dataset/v1/manifesto.json",
+  "output_directory": "recordings/",
+  "prepare_ms": 3000,
+  "settle_ms": 600,
+  "timeout_ms": 5000,
+  "defaults": {
+    "play_ms": 10000,
+    "tail_ms": 3000,
+    "input_gain_db": 0,
+    "triangle": [0.3333333333333333, 0.3333333333333333, 0.3333333333333333],
+    "density": 0.5,
+    "temperature": 1,
+    "permanence": 0.5,
+    "contrast": 1,
+    "clock_ms": 500,
+    "enabled": [1, 1, 1],
+    "gain_db": {"glissando": 0, "cluster": 0, "extreme": 0}
+  },
+  "runs": [
+    {"id": "01_original", "file": "Original.wav"},
+    {"id": "02_cassol", "file": "somax_cassol__01.wav"}
+  ]
+}
