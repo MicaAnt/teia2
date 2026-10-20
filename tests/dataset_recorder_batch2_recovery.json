@@ -1,0 +1,668 @@
+{
+  "schema_version": 1,
+  "experiment_id": "dataset_v1_batch2_recovery",
+  "source_directory": "../soundSamples/dataset/v1/",
+  "dataset_manifest": "../soundSamples/dataset/v1/manifesto.json",
+  "output_directory": "/Volumes/Seagate Basic/TEIA_Dataset/batch2_recovery/",
+  "prepare_ms": 3000,
+  "settle_ms": 600,
+  "timeout_ms": 5000,
+  "defaults": {
+    "play_ms": 10000,
+    "tail_ms": 3000,
+    "input_gain_db": 0,
+    "triangle": [
+      0.3333333333333333,
+      0.3333333333333333,
+      0.3333333333333333
+    ],
+    "density": 0.5,
+    "temperature": 1,
+    "permanence": 0.5,
+    "contrast": 1,
+    "clock_ms": 500,
+    "enabled": [
+      1,
+      1,
+      1
+    ],
+    "gain_db": {
+      "glissando": 0,
+      "cluster": 0,
+      "extreme": 0
+    }
+  },
+  "runs": [
+    {
+      "id": "05_cello_percussivo__02__p4_center",
+      "file": "cello_percussivo__02.wav",
+      "parameters": {
+        "triangle": [
+          0.3333333333333333,
+          0.3333333333333333,
+          0.3333333333333333
+        ]
+      }
+    },
+    {
+      "id": "05_cello_percussivo__02__p5_glissando_local",
+      "file": "cello_percussivo__02.wav",
+      "parameters": {
+        "triangle": [
+          0.6111111111111112,
+          0.19444444444444445,
+          0.19444444444444445
+        ]
+      }
+    },
+    {
+      "id": "05_cello_percussivo__02__p6_cluster_local",
+      "file": "cello_percussivo__02.wav",
+      "parameters": {
+        "triangle": [
+          0.19444444444444445,
+          0.6111111111111112,
+          0.19444444444444445
+        ]
+      }
+    },
+    {
+      "id": "05_cello_percussivo__02__p7_extreme_local",
+      "file": "cello_percussivo__02.wav",
+      "parameters": {
+        "triangle": [
+          0.19444444444444445,
+          0.19444444444444445,
+          0.6111111111111112
+        ]
+      }
+    },
+    {
+      "id": "06_cello_tecnicas__01__p4_center",
+      "file": "cello_tecnicas__01.wav",
+      "parameters": {
+        "triangle": [
+          0.3333333333333333,
+          0.3333333333333333,
+          0.3333333333333333
+        ]
+      }
+    },
+    {
+      "id": "06_cello_tecnicas__01__p5_glissando_local",
+      "file": "cello_tecnicas__01.wav",
+      "parameters": {
+        "triangle": [
+          0.6111111111111112,
+          0.19444444444444445,
+          0.19444444444444445
+        ]
+      }
+    },
+    {
+      "id": "06_cello_tecnicas__01__p6_cluster_local",
+      "file": "cello_tecnicas__01.wav",
+      "parameters": {
+        "triangle": [
+          0.19444444444444445,
+          0.6111111111111112,
+          0.19444444444444445
+        ]
+      }
+    },
+    {
+      "id": "06_cello_tecnicas__01__p7_extreme_local",
+      "file": "cello_tecnicas__01.wav",
+      "parameters": {
+        "triangle": [
+          0.19444444444444445,
+          0.19444444444444445,
+          0.6111111111111112
+        ]
+      }
+    },
+    {
+      "id": "07_cello_tecnicas__02__p4_center",
+      "file": "cello_tecnicas__02.wav",
+      "parameters": {
+        "triangle": [
+          0.3333333333333333,
+          0.3333333333333333,
+          0.3333333333333333
+        ]
+      }
+    },
+    {
+      "id": "07_cello_tecnicas__02__p5_glissando_local",
+      "file": "cello_tecnicas__02.wav",
+      "parameters": {
+        "triangle": [
+          0.6111111111111112,
+          0.19444444444444445,
+          0.19444444444444445
+        ]
+      }
+    },
+    {
+      "id": "07_cello_tecnicas__02__p6_cluster_local",
+      "file": "cello_tecnicas__02.wav",
+      "parameters": {
+        "triangle": [
+          0.19444444444444445,
+          0.6111111111111112,
+          0.19444444444444445
+        ]
+      }
+    },
+    {
+      "id": "07_cello_tecnicas__02__p7_extreme_local",
+      "file": "cello_tecnicas__02.wav",
+      "parameters": {
+        "triangle": [
+          0.19444444444444445,
+          0.19444444444444445,
+          0.6111111111111112
+        ]
+      }
+    },
+    {
+      "id": "08_duos_clarinet_alto__01__p4_center",
+      "file": "duos_clarinet_alto__01.wav",
+      "parameters": {
+        "triangle": [
+          0.3333333333333333,
+          0.3333333333333333,
+          0.3333333333333333
+        ]
+      }
+    },
+    {
+      "id": "08_duos_clarinet_alto__01__p5_glissando_local",
+      "file": "duos_clarinet_alto__01.wav",
+      "parameters": {
+        "triangle": [
+          0.6111111111111112,
+          0.19444444444444445,
+          0.19444444444444445
+        ]
+      }
+    },
+    {
+      "id": "08_duos_clarinet_alto__01__p6_cluster_local",
+      "file": "duos_clarinet_alto__01.wav",
+      "parameters": {
+        "triangle": [
+          0.19444444444444445,
+          0.6111111111111112,
+          0.19444444444444445
+        ]
+      }
+    },
+    {
+      "id": "08_duos_clarinet_alto__01__p7_extreme_local",
+      "file": "duos_clarinet_alto__01.wav",
+      "parameters": {
+        "triangle": [
+          0.19444444444444445,
+          0.19444444444444445,
+          0.6111111111111112
+        ]
+      }
+    },
+    {
+      "id": "09_duos_clarinet_alto__02__p4_center",
+      "file": "duos_clarinet_alto__02.wav",
+      "parameters": {
+        "triangle": [
+          0.3333333333333333,
+          0.3333333333333333,
+          0.3333333333333333
+        ]
+      }
+    },
+    {
+      "id": "09_duos_clarinet_alto__02__p5_glissando_local",
+      "file": "duos_clarinet_alto__02.wav",
+      "parameters": {
+        "triangle": [
+          0.6111111111111112,
+          0.19444444444444445,
+          0.19444444444444445
+        ]
+      }
+    },
+    {
+      "id": "09_duos_clarinet_alto__02__p6_cluster_local",
+      "file": "duos_clarinet_alto__02.wav",
+      "parameters": {
+        "triangle": [
+          0.19444444444444445,
+          0.6111111111111112,
+          0.19444444444444445
+        ]
+      }
+    },
+    {
+      "id": "09_duos_clarinet_alto__02__p7_extreme_local",
+      "file": "duos_clarinet_alto__02.wav",
+      "parameters": {
+        "triangle": [
+          0.19444444444444445,
+          0.19444444444444445,
+          0.6111111111111112
+        ]
+      }
+    },
+    {
+      "id": "10_duos_sopsax_drums__01__p4_center",
+      "file": "duos_sopsax_drums__01.wav",
+      "parameters": {
+        "triangle": [
+          0.3333333333333333,
+          0.3333333333333333,
+          0.3333333333333333
+        ]
+      }
+    },
+    {
+      "id": "10_duos_sopsax_drums__01__p5_glissando_local",
+      "file": "duos_sopsax_drums__01.wav",
+      "parameters": {
+        "triangle": [
+          0.6111111111111112,
+          0.19444444444444445,
+          0.19444444444444445
+        ]
+      }
+    },
+    {
+      "id": "10_duos_sopsax_drums__01__p6_cluster_local",
+      "file": "duos_sopsax_drums__01.wav",
+      "parameters": {
+        "triangle": [
+          0.19444444444444445,
+          0.6111111111111112,
+          0.19444444444444445
+        ]
+      }
+    },
+    {
+      "id": "10_duos_sopsax_drums__01__p7_extreme_local",
+      "file": "duos_sopsax_drums__01.wav",
+      "parameters": {
+        "triangle": [
+          0.19444444444444445,
+          0.19444444444444445,
+          0.6111111111111112
+        ]
+      }
+    },
+    {
+      "id": "11_duos_sopsax_drums__02__p4_center",
+      "file": "duos_sopsax_drums__02.wav",
+      "parameters": {
+        "triangle": [
+          0.3333333333333333,
+          0.3333333333333333,
+          0.3333333333333333
+        ]
+      }
+    },
+    {
+      "id": "11_duos_sopsax_drums__02__p5_glissando_local",
+      "file": "duos_sopsax_drums__02.wav",
+      "parameters": {
+        "triangle": [
+          0.6111111111111112,
+          0.19444444444444445,
+          0.19444444444444445
+        ]
+      }
+    },
+    {
+      "id": "11_duos_sopsax_drums__02__p6_cluster_local",
+      "file": "duos_sopsax_drums__02.wav",
+      "parameters": {
+        "triangle": [
+          0.19444444444444445,
+          0.6111111111111112,
+          0.19444444444444445
+        ]
+      }
+    },
+    {
+      "id": "11_duos_sopsax_drums__02__p7_extreme_local",
+      "file": "duos_sopsax_drums__02.wav",
+      "parameters": {
+        "triangle": [
+          0.19444444444444445,
+          0.19444444444444445,
+          0.6111111111111112
+        ]
+      }
+    },
+    {
+      "id": "12_somax_cassol__01__p4_center",
+      "file": "somax_cassol__01.wav",
+      "parameters": {
+        "triangle": [
+          0.3333333333333333,
+          0.3333333333333333,
+          0.3333333333333333
+        ]
+      }
+    },
+    {
+      "id": "12_somax_cassol__01__p5_glissando_local",
+      "file": "somax_cassol__01.wav",
+      "parameters": {
+        "triangle": [
+          0.6111111111111112,
+          0.19444444444444445,
+          0.19444444444444445
+        ]
+      }
+    },
+    {
+      "id": "12_somax_cassol__01__p6_cluster_local",
+      "file": "somax_cassol__01.wav",
+      "parameters": {
+        "triangle": [
+          0.19444444444444445,
+          0.6111111111111112,
+          0.19444444444444445
+        ]
+      }
+    },
+    {
+      "id": "12_somax_cassol__01__p7_extreme_local",
+      "file": "somax_cassol__01.wav",
+      "parameters": {
+        "triangle": [
+          0.19444444444444445,
+          0.19444444444444445,
+          0.6111111111111112
+        ]
+      }
+    },
+    {
+      "id": "13_somax_cassol__02__p4_center",
+      "file": "somax_cassol__02.wav",
+      "parameters": {
+        "triangle": [
+          0.3333333333333333,
+          0.3333333333333333,
+          0.3333333333333333
+        ]
+      }
+    },
+    {
+      "id": "13_somax_cassol__02__p5_glissando_local",
+      "file": "somax_cassol__02.wav",
+      "parameters": {
+        "triangle": [
+          0.6111111111111112,
+          0.19444444444444445,
+          0.19444444444444445
+        ]
+      }
+    },
+    {
+      "id": "13_somax_cassol__02__p6_cluster_local",
+      "file": "somax_cassol__02.wav",
+      "parameters": {
+        "triangle": [
+          0.19444444444444445,
+          0.6111111111111112,
+          0.19444444444444445
+        ]
+      }
+    },
+    {
+      "id": "13_somax_cassol__02__p7_extreme_local",
+      "file": "somax_cassol__02.wav",
+      "parameters": {
+        "triangle": [
+          0.19444444444444445,
+          0.19444444444444445,
+          0.6111111111111112
+        ]
+      }
+    },
+    {
+      "id": "14_somax_guitarra__01__p4_center",
+      "file": "somax_guitarra__01.wav",
+      "parameters": {
+        "triangle": [
+          0.3333333333333333,
+          0.3333333333333333,
+          0.3333333333333333
+        ]
+      }
+    },
+    {
+      "id": "14_somax_guitarra__01__p5_glissando_local",
+      "file": "somax_guitarra__01.wav",
+      "parameters": {
+        "triangle": [
+          0.6111111111111112,
+          0.19444444444444445,
+          0.19444444444444445
+        ]
+      }
+    },
+    {
+      "id": "14_somax_guitarra__01__p6_cluster_local",
+      "file": "somax_guitarra__01.wav",
+      "parameters": {
+        "triangle": [
+          0.19444444444444445,
+          0.6111111111111112,
+          0.19444444444444445
+        ]
+      }
+    },
+    {
+      "id": "14_somax_guitarra__01__p7_extreme_local",
+      "file": "somax_guitarra__01.wav",
+      "parameters": {
+        "triangle": [
+          0.19444444444444445,
+          0.19444444444444445,
+          0.6111111111111112
+        ]
+      }
+    },
+    {
+      "id": "15_somax_guitarra__02__p4_center",
+      "file": "somax_guitarra__02.wav",
+      "parameters": {
+        "triangle": [
+          0.3333333333333333,
+          0.3333333333333333,
+          0.3333333333333333
+        ]
+      }
+    },
+    {
+      "id": "15_somax_guitarra__02__p5_glissando_local",
+      "file": "somax_guitarra__02.wav",
+      "parameters": {
+        "triangle": [
+          0.6111111111111112,
+          0.19444444444444445,
+          0.19444444444444445
+        ]
+      }
+    },
+    {
+      "id": "15_somax_guitarra__02__p6_cluster_local",
+      "file": "somax_guitarra__02.wav",
+      "parameters": {
+        "triangle": [
+          0.19444444444444445,
+          0.6111111111111112,
+          0.19444444444444445
+        ]
+      }
+    },
+    {
+      "id": "15_somax_guitarra__02__p7_extreme_local",
+      "file": "somax_guitarra__02.wav",
+      "parameters": {
+        "triangle": [
+          0.19444444444444445,
+          0.19444444444444445,
+          0.6111111111111112
+        ]
+      }
+    },
+    {
+      "id": "16_somax_joelle__01__p4_center",
+      "file": "somax_joelle__01.wav",
+      "parameters": {
+        "triangle": [
+          0.3333333333333333,
+          0.3333333333333333,
+          0.3333333333333333
+        ]
+      }
+    },
+    {
+      "id": "16_somax_joelle__01__p5_glissando_local",
+      "file": "somax_joelle__01.wav",
+      "parameters": {
+        "triangle": [
+          0.6111111111111112,
+          0.19444444444444445,
+          0.19444444444444445
+        ]
+      }
+    },
+    {
+      "id": "16_somax_joelle__01__p6_cluster_local",
+      "file": "somax_joelle__01.wav",
+      "parameters": {
+        "triangle": [
+          0.19444444444444445,
+          0.6111111111111112,
+          0.19444444444444445
+        ]
+      }
+    },
+    {
+      "id": "16_somax_joelle__01__p7_extreme_local",
+      "file": "somax_joelle__01.wav",
+      "parameters": {
+        "triangle": [
+          0.19444444444444445,
+          0.19444444444444445,
+          0.6111111111111112
+        ]
+      }
+    },
+    {
+      "id": "17_somax_joelle__02__p4_center",
+      "file": "somax_joelle__02.wav",
+      "parameters": {
+        "triangle": [
+          0.3333333333333333,
+          0.3333333333333333,
+          0.3333333333333333
+        ]
+      }
+    },
+    {
+      "id": "17_somax_joelle__02__p5_glissando_local",
+      "file": "somax_joelle__02.wav",
+      "parameters": {
+        "triangle": [
+          0.6111111111111112,
+          0.19444444444444445,
+          0.19444444444444445
+        ]
+      }
+    },
+    {
+      "id": "17_somax_joelle__02__p6_cluster_local",
+      "file": "somax_joelle__02.wav",
+      "parameters": {
+        "triangle": [
+          0.19444444444444445,
+          0.6111111111111112,
+          0.19444444444444445
+        ]
+      }
+    },
+    {
+      "id": "17_somax_joelle__02__p7_extreme_local",
+      "file": "somax_joelle__02.wav",
+      "parameters": {
+        "triangle": [
+          0.19444444444444445,
+          0.19444444444444445,
+          0.6111111111111112
+        ]
+      }
+    }
+  ],
+  "recovery_of": {
+    "experiment_file": "dataset_recorder_batch2.json",
+    "session_id": "dataset_v1_batch2__20261020T182745747Z",
+    "original_run_indices": [
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63,
+      64,
+      65,
+      66,
+      67,
+      68
+    ],
+    "reason": "Original session has 16 validated completed runs. Run 17 has a WAV but its metadata remains recording without final telemetry; preserve it and repeat this condition. Runs 18-68 are missing."
+  }
+}

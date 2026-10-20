@@ -3,7 +3,7 @@
   "experiment_id": "pilot_v1",
   "source_directory": "../soundSamples/dataset/v1/",
   "dataset_manifest": "../soundSamples/dataset/v1/manifesto.json",
-  "output_directory": "recordings/",
+  "output_directory": "/Volumes/Seagate Basic/TEIA_Dataset/pilot/",
   "prepare_ms": 3000,
   "settle_ms": 600,
   "timeout_ms": 5000,

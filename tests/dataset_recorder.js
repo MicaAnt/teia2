@@ -7,14 +7,17 @@ autowatch = 0;
 inlets = 1;
 outlets = 6;
 
-var VERSION = "1.0.0";
+var VERSION = "1.2.2";
 var SELF = this;
 var BUFFER_NAME = jsarguments[1];
 var root = "", config = null, manifest = null, active = false;
+var configFile = "", configHash = "";
 var phase = "idle", current = null, runIndex = -1, batch = null;
 var dsp = {on: 0, sample_rate: 0, signal_vector: 0, io_vector: 0};
 var jobs = [], bufferJob = null, bufferBusy = false, epoch = 0;
 var latestStates = {gesture: null, density: null};
+// These are control targets from the existing buses, not measured audio levels.
+var latestGains = {glissando: null, cluster: null, extreme: null};
 var lock = new Global("teia_dataset_recorder_owner");
 var OWNER = String(BUFFER_NAME);
 var PARAMS = ["triangle", "density", "temperature", "permanence", "contrast", "clock_ms", "enabled"];
@@ -76,14 +79,28 @@ function readJSON(name) {
     return JSON.parse(s);
 }
 function writeMetadata(fresh) {
-    var name = current.json, f, content;
+    var name = current.json, f, content, offset, chunk, previous;
     if (fresh) assert(!exists(name), "Refusing to overwrite " + name);
     else assert(readJSON(name).run_id === current.id, "Metadata ownership changed: " + name);
-    content = JSON.stringify(current.meta, null, 2) + "\n";
+    // Legacy Max File silently truncated a single long writestring() at 32767
+    // bytes in the native pilot. ASCII escapes keep byte/character boundaries
+    // identical even for provenance text or paths containing Unicode.
+    content = JSON.stringify(current.meta, null, 2).replace(/[\u007f-\uffff]/g, function (c) {
+        return "\\u" + ("0000" + c.charCodeAt(0).toString(16)).slice(-4);
+    }) + "\n";
     f = new File(name, "write");
     assert(f.isopen, "Cannot write " + name);
-    try { f.eof = 0; f.writestring(content); }
+    try {
+        f.eof = 0;
+        for (offset = 0; offset < content.length; offset += 4096) {
+            chunk = content.slice(offset, offset + 4096); previous = f.position;
+            f.writestring(chunk);
+            assert(f.position === previous + chunk.length, "Incomplete metadata write: " + name + " at byte " + previous);
+        }
+        assert(f.eof === content.length, "Metadata size differs after writing: " + name);
+    }
     finally { f.close(); }
+    assert(JSON.stringify(readJSON(name)) === JSON.stringify(current.meta), "Metadata read-back differs: " + name);
 }
 function after(ms, fn) {
     var job = new Task(fn, SELF);
@@ -109,18 +126,25 @@ function initialize() {
     if (lock.owner === OWNER) lock.owner = "";
     load();
 }
-function load() {
+function load(filename) {
     if (active || phase === "finalizing") { status("Stop the batch before reloading."); return; }
     config = null;
     try {
         assert(root, "Save and reopen the recorder patch first");
-        var c = readJSON(path(root, "dataset_recorder.json"));
+        var name = typeof filename === "undefined" ? "dataset_recorder.json" : filename;
+        assert(typeof name === "string" && /^[A-Za-z0-9_-]+\.json$/.test(name), "Use an experiment JSON filename from the recorder folder");
+        var c = readJSON(path(root, name));
         validateConfig(c);
         manifest = readJSON(path(root, c.dataset_manifest));
         assert(manifest.clips && manifest.clips.length, "Dataset manifest has no clips");
-        config = c; gainsToUI(); phase = "loaded";
+        configFile = name; configHash = sha256file(path(root, name));
+        config = c; gainsToUI(); requestedToUI(c.defaults); resetPeakUI(); phase = "loaded";
+        for (name in latestGains) if (latestGains.hasOwnProperty(name))
+            panel("live_gain", name, displayNumber(latestGains[name]));
+        for (name in latestStates) if (latestStates.hasOwnProperty(name))
+            panel("state", name, displayNumber(latestStates[name]));
         ui("file", "—"); ui("progress", c.runs.length + " runs loaded");
-        status("Experiment loaded. Configure the bridge and enable DSP at 48 kHz.");
+        status(c.experiment_id + " loaded. Output: " + path(root, c.output_directory) + ". Enable DSP at 48 kHz.");
     } catch (e) { status("Load error: " + e.message); outlet(5, "Load error: " + e.message); }
 }
 function validateConfig(c) {
@@ -170,6 +194,86 @@ function gainsToUI() {
     outlet(2, ["gains", p.gain_db.glissando, p.gain_db.cluster, p.gain_db.extreme]);
     ui("input_gain", p.input_gain_db);
 }
+
+// Read-only telemetry travels on the existing UI outlet; it never feeds controls.
+function panel(section, key, value) { outlet(2, [section, key, value]); }
+function displayNumber(value) {
+    return finite(value) ? String(Math.round(value * 1000000) / 1000000) : "Not observed";
+}
+function parameterText(key, value) {
+    if (value instanceof Array) return "G " + displayNumber(value[0]) + " | C " +
+        displayNumber(value[1]) + " | E " + displayNumber(value[2]);
+    if (key === "contrast") return displayNumber(value) + " (exponent " + displayNumber(0.5 + 1.5 * value) + ")";
+    return displayNumber(value);
+}
+function requestedToUI(p) {
+    var i, key;
+    for (i = 0; i < PARAMS.length; i++) {
+        key = PARAMS[i]; panel("requested", key, parameterText(key, p[key]));
+        panel("confirmed", key, "Waiting for echo");
+    }
+    ui("timing", "Input " + p.play_ms + " ms | Tail " + p.tail_ms + " ms | Prepare " +
+        config.prepare_ms + " ms | Settle " + config.settle_ms + " ms");
+}
+function live_gain(name, value) {
+    if (!latestGains.hasOwnProperty(name) || !finite(value)) return;
+    var changed = latestGains[name] !== value;
+    latestGains[name] = value; panel("live_gain", name, displayNumber(value));
+    if (changed && current && current.recording_started && (phase === "recording" || phase === "tail"))
+        current.meta.gain_target_events.push({time_ms: now() - epoch, gesture: name, target_db: value});
+}
+function newPeakMonitor() {
+    var result = {method: "peakamp~ absolute sample peaks; shared 100 ms polling and final flush",
+        report_interval_ms: 100, margin_dbfs: -3, any_over_0_dbfs: false,
+        any_above_margin: false, nonfinite_reports: 0, observed_channel_count: 0,
+        all_channels_observed: false, channels: [],
+        boundary_note: "Reset/start/stop use the Max scheduler. Verify exact file peaks offline; these are not true-peak measurements or proof of absence of upstream clipping.",
+        zero_note: "peak_dbfs is null for zero amplitude or an unobserved channel; observed distinguishes them."};
+    var i;
+    for (i = 0; i < CHANNELS.length; i++) result.channels.push({channel: CHANNELS[i],
+        observed: false, report_count: 0, peak_amplitude: 0, peak_dbfs: null,
+        over_0_dbfs: false, above_margin: false});
+    return result;
+}
+function resetPeakUI() {
+    var i;
+    for (i = 0; i < CHANNELS.length; i++) panel("peak", CHANNELS[i], "Not measured");
+    ui("peak_status", "Waiting for recording | No limiter or automatic gain reduction");
+}
+function peak_report(index, amplitude) {
+    // Final flush is deferred from Max and may arrive while the file is closing.
+    if (!current || !current.recording_started ||
+        (phase !== "recording" && phase !== "tail" && phase !== "finalizing")) return;
+    if (!finite(index) || index !== Math.floor(index) || index < 0 || index >= CHANNELS.length) return;
+    var m = current.meta.peak_monitor, c = m.channels[index], previous = c.peak_amplitude;
+    if (!finite(amplitude)) {
+        m.nonfinite_reports++; ui("peak_status", "WARNING: invalid peak report; check the WAV offline"); return;
+    }
+    amplitude = Math.abs(amplitude);
+    var first = !c.observed;
+    c.observed = true; c.report_count++;
+    c.peak_amplitude = Math.max(previous, amplitude);
+    c.peak_dbfs = c.peak_amplitude > 0 ? 20 * Math.log(c.peak_amplitude) / Math.LN10 : null;
+    c.over_0_dbfs = c.peak_amplitude > 1;
+    c.above_margin = c.peak_amplitude > Math.pow(10, m.margin_dbfs / 20);
+    m.any_over_0_dbfs = m.any_over_0_dbfs || c.over_0_dbfs;
+    m.any_above_margin = m.any_above_margin || c.above_margin;
+    if (first || c.peak_amplitude > previous) panel("peak", c.channel,
+        c.peak_dbfs === null ? "-inf" : c.peak_dbfs.toFixed(2));
+    if (m.nonfinite_reports) ui("peak_status", "WARNING: invalid peak report; check the WAV offline");
+    else if (m.any_over_0_dbfs) ui("peak_status", "WARNING: above 0 dBFS | Latched for this run | No gain reduction");
+    else if (m.any_above_margin) ui("peak_status", "HEADROOM: above -3 dBFS | Latched for this run | No gain reduction");
+    else ui("peak_status", "Measured peaks within -3 dBFS margin | Monitoring only");
+}
+function summarizePeaks() {
+    var m = current.meta.peak_monitor, i, count = 0;
+    for (i = 0; i < m.channels.length; i++) if (m.channels[i].observed) count++;
+    m.observed_channel_count = count; m.all_channels_observed = count === CHANNELS.length;
+    if (!current.recording_started) ui("peak_status", "No capture started | No peak data");
+    else if (count !== CHANNELS.length) ui("peak_status",
+        "WARNING: incomplete peak telemetry (" + count + "/8 channels) | Check the WAV offline" +
+        (m.any_over_0_dbfs ? " | Above 0 dBFS detected" : ""));
+}
 function set_gain(name, value) {
     if (!config) return;
     if (active || phase === "finalizing") { gainsToUI(); status("Gains are fixed during a batch. Stop before editing."); return; }
@@ -200,25 +304,32 @@ function startChecked() {
         lock.owner = OWNER;
         validateConfig(config);
         var session = config.experiment_id + "__" + iso().replace(/[-:.]/g, ""), i, p, src, header, clip;
-        var versions = {}, runs = [];
+        var versions = {}, runs = [], sources = {}, cached;
         // Do all expensive source/patch hashing before starting audio.
         status("Checking inputs, output names and patch versions...");
         for (i = 0; i < VERSION_FILES.length; i++) versions[VERSION_FILES[i]] = sha256file(path(root, VERSION_FILES[i]));
         for (i = 0; i < config.runs.length; i++) {
             p = parameters(config, config.runs[i]); src = path(root, config.source_directory + "/" + config.runs[i].file);
-            header = waveInfo(src);
-            assert(header.channels === 1 && header.sample_rate === 48000, "Input must be mono / 48 kHz: " + src);
+            // The same source appears three/four times in a dataset batch.
+            // Read and hash each unique source once, before any audio starts.
+            if (!sources.hasOwnProperty(src)) {
+                header = waveInfo(src);
+                assert(header.channels === 1 && header.sample_rate === 48000, "Input must be mono / 48 kHz: " + src);
+                clip = manifestClip(config.runs[i].file);
+                var sourceHash = sha256file(src);
+                assert(sourceHash === clip.sha256, "Input hash differs from dataset manifest: " + src);
+                sources[src] = {header: header, clip: clip, hash: sourceHash};
+            }
+            cached = sources[src]; header = cached.header; clip = cached.clip;
             assert(header.frames >= Math.round(p.play_ms * 48), "Input is too short: " + src);
-            clip = manifestClip(config.runs[i].file);
-            var sourceHash = sha256file(src);
-            assert(sourceHash === clip.sha256, "Input hash differs from dataset manifest: " + src);
             var id = session + "__" + config.runs[i].id, wav = path(root, config.output_directory + "/" + id + ".wav");
             var json = wav.replace(/\.wav$/, ".json");
             assert(!exists(wav) && !exists(json), "Refusing to overwrite " + wav);
-            runs.push({id: id, wav: wav, json: json, source: src, clip: clip, source_hash: sourceHash,
+            runs.push({id: id, wav: wav, json: json, source: src, clip: clip, source_hash: cached.hash,
                 source_info: header, parameters: p});
         }
         batch = {session: session, config: copy(config), runs: runs, versions: versions,
+            experiment_file: configFile, experiment_sha256: configHash,
             dataset_manifest_sha256: sha256file(path(root, config.dataset_manifest)),
             started_utc: iso(), dsp: copy(dsp)};
         active = true; current = null; runIndex = -1; nextRun();
@@ -233,14 +344,15 @@ function nextRun() {
     if (!active) return;
     cancelJobs(); runIndex++;
     if (runIndex >= batch.runs.length) {
-        active = false; phase = "completed"; current = null; unlock(); gainsToUI();
-        status("Batch completed. WAVs and run JSONs are in recordings/."); return;
+        active = false; phase = "completed"; current = null; unlock();
+        status("Batch completed. WAVs and run JSONs: " + path(root, config.output_directory)); return;
     }
     current = batch.runs[runIndex]; current.echoes = {}; current.ready = {}; current.opened = false;
-    gainsToUI();
+    gainsToUI(); requestedToUI(current.parameters); resetPeakUI();
     current.meta = {
         schema_version: 1, recorder_version: VERSION, run_id: current.id, session_id: batch.session,
         experiment_id: config.experiment_id, run_index: runIndex + 1, run_count: batch.runs.length,
+        experiment_file: batch.experiment_file, experiment_sha256: batch.experiment_sha256,
         status: "preparing", created_utc: iso(), output_wav: current.wav,
         source: {path: current.source, sha256: current.source_hash, dataset_clip: current.clip,
             info: current.source_info, start_frame: 0, play_frames: Math.round(current.parameters.play_ms * 48)},
@@ -255,6 +367,9 @@ function nextRun() {
         patch_sha256: batch.versions, dataset_manifest_sha256: batch.dataset_manifest_sha256,
         environment_note: "Patch/source hashes do not pin external object binaries, audio drivers, or unsaved patch edits. Save TEIA/interface changes before starting a batch.",
         state_events: [], initial_states: copy(latestStates),
+        initial_gain_targets_db: copy(latestGains), gain_target_events: [],
+        gain_target_note: "volRelG/C/E control targets in dB, before the existing ramps and downstream processing; not measured instantaneous audio gain. Null means not observed by this recorder instance.",
+        peak_monitor: newPeakMonitor(),
         reproducibility: "No seed or complete internal reset is claimed. Markov, urn, random, delay and modulation state may differ between runs. Preparation uses silence; it is not a DSP reset.",
         monitor_affects_recording: false
     };
@@ -289,6 +404,7 @@ function bridge() {
         key = a[0];
         if ((key === "gesture" || key === "density") && (a[1] === 0 || a[1] === 1 || a[1] === 2)) {
             var changed = latestStates[key] !== a[1]; latestStates[key] = a[1];
+            panel("state", key, String(a[1]));
             if (changed && current && current.recording_started && (phase === "recording" || phase === "tail"))
                 current.meta.state_events.push({time_ms: now() - epoch, engine: key, state: a[1]});
         }
@@ -307,6 +423,7 @@ function bridge() {
         }
         current.echoes[key] = true;
         current.meta.confirmed_parameters[key] = values.length === 1 ? values[0] : values;
+        panel("confirmed", key, parameterText(key, current.meta.confirmed_parameters[key]));
     } else if (kind === "ready" && (a[0] === "gesture" || a[0] === "density")) current.ready[a[0]] = true;
     else return;
     if (!current.ready.gesture || !current.ready.density) return;
@@ -354,10 +471,14 @@ function buffer_loaded() {
 }
 function beginRecording() {
     var p = current.parameters, duration = p.play_ms + p.tail_ms;
+    // Close the native feedback gates before flushing previous peak history.
+    transport("peak_reset", "bang");
     phase = "recording"; epoch = now(); current.recording_started = true;
     current.meta.started_utc = iso(); current.meta.initial_states = copy(latestStates);
+    current.meta.initial_gain_targets_db = copy(latestGains);
     current.meta.timing.record_command_scheduler_ms = epoch;
     transport("record", "record", duration);
+    transport("peak_start", 1);
     command("clock", 1);
     transport("play", "start", 0, p.play_ms, p.play_ms);
     transport("arm", duration);
@@ -389,7 +510,11 @@ function fail(text) {
     else { active = false; phase = "error"; unlock(); status("Error: " + text); }
 }
 function finish(result, reason, advance) {
-    cancelJobs(); phase = "finalizing";
+    cancelJobs();
+    // Stop polling, then flush the final partial interval. Feedback is deferred;
+    // the normal close/check delay lets it reach metadata before the final write.
+    if (current.recording_started) transport("peak_stop", "bang");
+    phase = "finalizing";
     current.advance = advance; current.meta.status = result; current.meta.error = reason || null;
     if (current.recording_started) current.meta.timing.stop_command_event_ms = now() - epoch;
     current.meta.finished_utc = iso(); haltTransport();
@@ -415,6 +540,7 @@ function finish(result, reason, advance) {
             current.advance = false; active = false;
         }
         current.meta.audio_file_created = !!current.opened;
+        summarizePeaks();
         try { writeMetadata(false); }
         catch (e) { current.advance = false; active = false; current.meta.status = "error"; current.meta.error = "Metadata write: " + e.message; }
         if (current.advance && active) { phase = "between_runs"; after(0, nextRun); }
@@ -487,7 +613,7 @@ function rotr(x, n) { return (x >>> n) | (x << (32 - n)); }
 function sha256file(name) {
     var f = new File(name, "read"), h = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
     var constants = SHA_K, rotate = rotr;
-    var total, bytes, tail = [], i, off, w = [], a,b,c,d,e,g,j,k,t1,t2,z,s0,s1,result = "";
+    var total, bytes, previous, requested, received, advanced, tail = [], i, off, w = [], a,b,c,d,e,g,j,k,t1,t2,z,s0,s1,result = "";
     assert(f.isopen, "Cannot fingerprint " + name);
     total = f.eof;
     function block(v, at) {
@@ -510,12 +636,27 @@ function sha256file(name) {
         h[4]=(h[4]+e)|0;h[5]=(h[5]+g)|0;h[6]=(h[6]+j)|0;h[7]=(h[7]+k)|0;
     }
     try {
-        while(f.position < f.eof) {
-            bytes=f.readbytes(Math.min(65536,f.eof-f.position)); assert(bytes.length>0,"Cannot read fingerprint input");
+        while(f.position < total) {
+            // Keep legacy Max File reads small; do not assume a full block was returned.
+            previous = f.position;
+            requested = Math.min(4096, total - previous);
+            try { bytes = f.readbytes(requested); }
+            catch (readError) {
+                throw new Error("Cannot read fingerprint input: " + name + " at byte " + previous +
+                    " of " + total + " (requested " + requested + "): " + readError.message);
+            }
+            // Accept a single-byte result too, without treating byte zero as an empty read.
+            if (typeof bytes === "number") bytes = [bytes];
+            received = bytes && typeof bytes.length === "number" ? bytes.length : 0;
+            advanced = f.position - previous;
+            assert(received > 0 && received <= requested && advanced === received,
+                "Cannot read fingerprint input: " + name + " at byte " + previous + " of " + total +
+                " (requested " + requested + ", returned " + received + ", advanced " + advanced + ")");
             bytes=tail.concat(bytes);
             for(off=0;off+64<=bytes.length;off+=64)block(bytes,off);
             tail=bytes.slice(off);
         }
+        assert(f.eof === total, "File size changed while fingerprinting: " + name);
     } finally { f.close(); }
     tail.push(128);while(tail.length%64!==56)tail.push(0);
     var high=Math.floor(total/536870912),low=(total*8)>>>0;

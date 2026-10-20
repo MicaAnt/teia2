@@ -1,0 +1,22 @@
+# Generated data and local environments live outside version control.
+.DS_Store
+__pycache__/
+*.py[cod]
+.venv
+.ipynb_checkpoints/
+*.wav
+*.WAV
+*.aif
+*.aiff
+*.AIF
+*.AIFF
+*.flac
+*.mp3
+*.jsonl
+/soundSamples/dataset/
+/tests/recordings/
+/_horsProject/
+
+# Keep only the lightweight, output-free dataset curation generator.
+*.ipynb
+!/soundSamples/curadoria_dataset.ipynb
