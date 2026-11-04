@@ -1,6 +1,6 @@
 # TEIA: Article Materials
 
-**Repository update in progress.** The documentation and companion audio examples are currently being organised. The listening examples will be added to the sections below.
+**Repository update in progress.** The repository and companion materials are being organised. Audio examples, a demonstration video, and links to the complete dataset and raw materials will be added to the sections below.
 
 Companion page for **TEIA: An Evolving Environment for Shaping Textures through Performance, Listening, and Design**, by Micael Antunes.
 
@@ -11,6 +11,10 @@ This page provides stable locations for the development source and the listening
 **Update in progress:** software and documentation are being organised in this development repository.
 
 The repository contains TEIA's development source, including its [processing patches](teia0.1/), [abstractions](abstractions/), and [recording and analysis tools](tests/). TEIA is developed as Max patches with Csound support.
+
+## Demo video
+
+**Update in progress:** a demonstration video of TEIA will be added here.
 
 ## Extreme refinement
 
@@ -33,6 +37,10 @@ Until the examples are posted, the supporting recordings and analysis data can b
 This comparison uses a common melodic cello input and the combined electronic output at the Glissando, Cluster, and Extreme vertices and the centre of the triangle. These recordings use the earlier Extreme adjustment of −10 dB / 1500 Hz.
 
 Until the examples are posted, the supporting recordings and analysis data can be requested by email.
+
+## Dataset and raw materials
+
+**Update in progress:** a link to the complete dataset and raw materials supporting the study will be added here.
 
 ## Contact
 
